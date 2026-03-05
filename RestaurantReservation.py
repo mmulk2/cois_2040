@@ -1,18 +1,22 @@
 from dataclasses import dataclass
 @dataclass
 class RegisterUser:
-    email: str
-    firstName: str
-    lastName: str
-    __password: str
-    __dob: str
+    email       : str
+    firstName   : str
+    lastName    : str
+    __password  : str
+    __dob       : str
 
     print("Registration in progress")
 
     def __str__(self):
-        return f"""{self.firstName} | {self.lastName} | {self.email} """
+        return f""" {self.firstName} | {self.lastName} | {self.email} """
 
-    
+    email      = str(input(" Enter your email: "        ))
+    firstName  = str(input(" Enter your firstName: "    ))
+    lastName   = str(input(" Enter your lastName: "     ))
+    __password = str(input(" Enter your password: "     ))
+    __dob      = str(input(" Enter your date of birth: "))
 
 if __name__ == "__main__":
     print("|====================================================|\n")
@@ -26,7 +30,7 @@ if __name__ == "__main__":
 
     try:
         option = int(input("Enter option 1 or 2 or 3: "))
-        if (option == 1):
+        if  (option == 1):
             print("You have selected: Register/signup")
         elif (option == 2):
             print("")
