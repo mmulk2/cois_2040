@@ -408,24 +408,51 @@ class RestaurantReservationApp:
             entry.pack(padx=2, pady=2, fill=tk.BOTH, expand=True)
             return entry
 
+        # DOB dropdown options (storage format: "Jan 01, 2002")
+        MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        DAYS = [str(d) for d in range(1, 32)]
+        import datetime as _dt
+        current_year = _dt.datetime.now().year
+        YEARS = [str(y) for y in range(current_year - 10, 1949, -1)]
+
         email_var = tk.StringVar()
         first_name_var = tk.StringVar()
         last_name_var = tk.StringVar()
         password_var = tk.StringVar()
-        dob_var = tk.StringVar()
+        month_var = tk.StringVar(value=MONTHS[0])
+        day_var = tk.StringVar(value=DAYS[0])
+        year_var = tk.StringVar(value=YEARS[0])
 
         make_entry_row(form, 0, "Email:", email_var)
         make_entry_row(form, 1, "First Name:", first_name_var)
         make_entry_row(form, 2, "Last Name:", last_name_var)
         make_entry_row(form, 3, "Password:", password_var, show="*")
-        make_entry_row(form, 4, "Date of Birth:", dob_var)
+
+        # Date of Birth: three dropdowns (Month, Day, Year)
+        tk.Label(
+            form,
+            text="Date of Birth:",
+            font=("Helvetica", 12, "bold"),
+            anchor="w",
+            fg="#1a1a1a",
+            bg="#f5f5f5",
+        ).grid(row=4, column=0, sticky="w", pady=4)
+        dob_frame = tk.Frame(form, bg="#f5f5f5")
+        dob_frame.grid(row=4, column=1, pady=4, padx=(8, 0), sticky="w")
+        tk.OptionMenu(dob_frame, month_var, *MONTHS).config(font=("Helvetica", 10), width=4)
+        tk.OptionMenu(dob_frame, day_var, *DAYS).config(font=("Helvetica", 10), width=3)
+        tk.OptionMenu(dob_frame, year_var, *YEARS).config(font=("Helvetica", 10), width=5)
+        for w in dob_frame.winfo_children():
+            w.pack(side=tk.LEFT, padx=(0, 4))
 
         def do_submit() -> None:
             email = email_var.get()
             first_name = first_name_var.get()
             last_name = last_name_var.get()
             password = password_var.get()
-            dob = dob_var.get()
+            # Build DOB string from dropdowns: "Jan 15, 2000"
+            day_str = day_var.get().zfill(2) if len(day_var.get()) == 1 else day_var.get()
+            dob = f"{month_var.get()} {day_str}, {year_var.get()}"
 
             ok, msg = validate_registration(
                 email, first_name, last_name, password, dob
@@ -439,7 +466,7 @@ class RestaurantReservationApp:
                 firstName=first_name.strip(),
                 lastName=last_name.strip(),
                 password=password,
-                dob=dob.strip(),
+                dob=dob,
             )
             self._user_service.save_user(user)
             messagebox.showinfo("Registration", "Registration Successful")

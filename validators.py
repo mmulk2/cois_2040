@@ -2,6 +2,8 @@
 Validation logic for user input.
 """
 
+from datetime import datetime
+
 
 def is_numeric_only(value: str) -> bool:
     """Return True if value is purely numeric (int or float)."""
@@ -18,6 +20,17 @@ def looks_like_email(s: str) -> bool:
     """Basic email format check: contains @ and at least one dot after @."""
     s = (s or "").strip()
     return "@" in s and "." in s and len(s) > 3
+
+
+def is_valid_dob_string(dob: str) -> bool:
+    """Return True if dob is in format 'Mon DD, YYYY' and is a valid date."""
+    if not dob or not dob.strip():
+        return False
+    try:
+        datetime.strptime(dob.strip(), "%b %d, %Y")
+        return True
+    except ValueError:
+        return False
 
 
 def validate_registration(
@@ -54,8 +67,10 @@ def validate_registration(
         return False, "Password should not be only numbers. Please enter a valid password."
 
     if not (dob and dob.strip()):
-        return False, "Please fill all the data for registration.\nEnter Date of Birth."
-    if is_numeric_only(dob) and len(dob.strip()) <= 4:
-        return False, "Date of Birth should not be only numbers (e.g. use DD/MM/YYYY). Please enter a valid date."
+        return False, "Please fill all the data for registration.\nSelect Date of Birth."
+    if is_numeric_only(dob):
+        return False, "Date of Birth must be selected from the dropdowns."
+    if not is_valid_dob_string(dob):
+        return False, "Please select a valid Date of Birth (Month, Day, Year)."
 
     return True, ""
