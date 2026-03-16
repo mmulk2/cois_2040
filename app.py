@@ -94,7 +94,7 @@ class RestaurantReservationApp:
             text="Exit",
             bg="#e74c3c",
             activebackground="#c0392b",
-            command=self.root.quit,
+            command=self._exit_app,
             **btn_style,
         ).pack(pady=6)
 
@@ -371,6 +371,10 @@ class RestaurantReservationApp:
     def _do_logout(self) -> None:
         self.logged_in_email = None
         self.show_main_menu()
+
+    def _exit_app(self) -> None:
+         messagebox.showinfo("Exit", "Thank you for using our Reservation System")
+         self.root.quit()
 
     def show_registration(self) -> None:
         self.clear_window()
@@ -708,11 +712,28 @@ class RestaurantReservationApp:
             width=16,
         ).pack(pady=4)
 
-    def show_cancel_reservation(self) -> None:
-        messagebox.showinfo(
-            "Cancel Reservation",
-            "Cancel reservation feature is not available right now."
-        )
+    def show_cancel_reservation(self):
+
+     reservation = self._reservation_service.get_reservation_by_email(self.logged_in_email)
+
+     if reservation is None:
+        messagebox.showinfo("Cancel Reservation", "No reservation found.")
+        return
+
+     confirm = messagebox.askyesno(
+        "Cancel Reservation",
+        "Are you sure you want to cancel your reservation?"
+     )
+
+     if not confirm:
+        return
+
+     self._reservation_service.delete_reservation(reservation)
+     messagebox.showinfo("Cancel Reservation", "Reservation cancelled successfully.")
+     self.show_user_menu()
+    
+
+    
     
     def show_modify_reservation(self) -> None:
         reservation = self._reservation_service.get_reservation_by_email(self.logged_in_email)
