@@ -10,10 +10,25 @@ class ReservationService:
     """Handles saving, loading, updating, and deleting reservations."""
 
     def save_reservation(self, reservation: Reservation) -> None:
+        """
+        Save a new reservation to the reservations file.
+
+        This method opens the file in append mode ("a"),
+        so each new reservation is added to the end of the file
+        without deleting existing reservations.
+        """
         with open(RESERVATIONS_FILE, "a", encoding="utf-8") as file:
             file.write(reservation.to_file_line())
 
     def get_reservations_by_email(self, email: str):
+        """
+        Return all reservations that belong to a specific user email.
+
+        The file is read line by line.
+        Each line is split using the pipe character "|".
+        If the email in the file matches the requested email,
+        a Reservation object is created and added to the list.
+        """
         reservations = []
 
         try:
@@ -32,21 +47,40 @@ class ReservationService:
                             )
                         )
         except FileNotFoundError:
+            # If the file does not exist yet, return an empty list
             return []
 
         return reservations
 
     def get_reservation_by_email(self, email: str):
+        """
+        Return the first reservation found for the given email.
+
+        This method uses get_reservations_by_email() and returns:
+        - the first reservation if at least one exists
+        - None if no reservation exists
+        """
         reservations = self.get_reservations_by_email(email)
         return reservations[0] if reservations else None
 
     def update_reservation(self, original_reservation: Reservation, updated_reservation: Reservation) -> None:
+        """
+        Update one reservation in the reservations file.
+        1. Read all lines from the reservation file
+        2. Open the file again in write mode ("w")
+        3. Rewrite every line back into the file
+        4. When the matching original reservation is found,
+           replace it with the updated reservation
+
+        The variable 'updated' ensures that only the first exact match is replaced.
+        """
         lines = []
 
         try:
             with open(RESERVATIONS_FILE, "r", encoding="utf-8") as file:
                 lines = file.readlines()
         except FileNotFoundError:
+            # If the reservation file does not exist, there is nothing to update
             return
 
         updated = False
@@ -71,12 +105,21 @@ class ReservationService:
                     file.write(line)
 
     def delete_reservation(self, reservation_to_delete: Reservation) -> None:
+        """
+        Delete one reservation from the reservations file.
+        1. Read all lines from the reservation file
+        2. Open the file again in write mode ("w")
+        3. Rewrite every line except the one that matches the reservation to delete
+
+        The variable 'deleted' ensures that only the first exact matching reservation is removed.
+        """
         lines = []
 
         try:
             with open(RESERVATIONS_FILE, "r", encoding="utf-8") as file:
                 lines = file.readlines()
         except FileNotFoundError:
+            # If the file does not exist, there is nothing to delete
             return
 
         deleted = False

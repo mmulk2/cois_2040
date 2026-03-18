@@ -5,7 +5,7 @@ Uses models, validators, and UserService following OOP separation of concerns.
 
 import tkinter as tk
 from tkinter import messagebox
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from models import RegisterUser, Reservation
 from user_service import UserService
@@ -17,6 +17,7 @@ class RestaurantReservationApp:
     """Main application: manages window and navigation between screens."""
 
     def __init__(self):
+        # Create the main Tkinter window
         self.root = tk.Tk()
         self.root.title("Restaurant Reservation System")
         self.root.geometry("520x480")
@@ -24,17 +25,23 @@ class RestaurantReservationApp:
         self.root.resizable(True, True)
         self.root.configure(bg="#f5f5f5")
 
+        # Create service objects for user and reservation file handling
         self._user_service = UserService()
         self._reservation_service = ReservationService()
+
+        # Store the email of the currently logged in user
         self.logged_in_email = None
 
+        # Start the program at the main menu
         self.show_main_menu()
 
     def clear_window(self) -> None:
+        # Remove all widgets from the current screen before drawing a new one
         for w in self.root.winfo_children():
             w.destroy()
 
     def show_main_menu(self) -> None:
+        # Main menu screen shown when the program starts
         self.clear_window()
 
         welcome = tk.Label(
@@ -99,6 +106,7 @@ class RestaurantReservationApp:
         ).pack(pady=6)
 
     def show_login(self) -> None:
+        # Login screen for existing users
         self.clear_window()
 
         title = tk.Label(
@@ -173,9 +181,11 @@ class RestaurantReservationApp:
         password_entry.pack(padx=2, pady=2, fill=tk.BOTH, expand=True)
 
         def do_login() -> None:
+            # Get the values entered by the user
             email = email_var.get().strip()
             password = password_var.get().strip()
 
+            # Basic empty-field validation to show login
             if not email:
                 messagebox.showwarning("Login", "Please enter your email.")
                 return
@@ -184,12 +194,14 @@ class RestaurantReservationApp:
                 messagebox.showwarning("Login", "Please enter your password.")
                 return
 
+            # Verify login against saved user data
             if self._user_service.verify_login(email, password):
                 self.logged_in_email = email
                 self.show_user_menu()
             else:
                 self.show_failed_login_options()
 
+        # Allow pressing Enter in password box to log in
         password_entry.bind("<Return>", lambda e: do_login())
 
         btn_frame = tk.Frame(content, bg="#f5f5f5")
@@ -219,6 +231,7 @@ class RestaurantReservationApp:
         tk.Frame(content, bg="#f5f5f5", height=1).pack(fill=tk.Y, expand=True)
 
     def show_failed_login_options(self) -> None:
+        # Screen shown when login fails
         self.clear_window()
 
         tk.Label(
@@ -289,6 +302,7 @@ class RestaurantReservationApp:
         ).pack(pady=6)
 
     def show_user_menu(self) -> None:
+        # Menu shown after a successful login
         self.clear_window()
 
         tk.Label(
@@ -369,14 +383,17 @@ class RestaurantReservationApp:
         ).pack(pady=6)
 
     def _do_logout(self) -> None:
+        # Clear the logged in user and go back to main menu
         self.logged_in_email = None
         self.show_main_menu()
 
     def _exit_app(self) -> None:
-         messagebox.showinfo("Exit", "Thank you for using our Reservation System")
-         self.root.quit()
+        # Close the application
+        messagebox.showinfo("Exit", "Thank you for using our Reservation System")
+        self.root.quit()
 
     def show_registration(self) -> None:
+        # Registration screen for new users
         self.clear_window()
 
         tk.Label(
@@ -395,6 +412,7 @@ class RestaurantReservationApp:
         form = tk.Frame(content, padx=20, pady=10, bg="#f5f5f5")
         form.pack(fill=tk.X)
 
+        # Helper function to create a labeled entry box
         def make_entry_row(parent, row, label_text, var, show=None):
             tk.Label(
                 parent,
@@ -430,6 +448,7 @@ class RestaurantReservationApp:
             entry.pack(padx=2, pady=2, fill=tk.BOTH, expand=True)
             return entry
 
+        # Dropdown options for date of birth
         MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         DAYS = [str(d) for d in range(1, 32)]
 
@@ -475,19 +494,23 @@ class RestaurantReservationApp:
         year_menu.pack(side=tk.LEFT, padx=(0, 4))
 
         def do_submit() -> None:
+            # Read user inputs from the registration form
             email = email_var.get()
             first_name = first_name_var.get()
             last_name = last_name_var.get()
             password = password_var.get()
 
+            # Build DOB string in the same format already used by project in registeration
             day_str = day_var.get().zfill(2) if len(day_var.get()) == 1 else day_var.get()
             dob = f"{month_var.get()} {day_str}, {year_var.get()}"
 
+            # Validate the registration fields
             ok, msg = validate_registration(email, first_name, last_name, password, dob)
             if not ok:
                 messagebox.showwarning("Registration", msg)
                 return
 
+            # Create a RegisterUser object and save it
             user = RegisterUser(
                 email=email.strip(),
                 firstName=first_name.strip(),
@@ -501,6 +524,7 @@ class RestaurantReservationApp:
             self.show_main_menu()
 
         def do_exit() -> None:
+            # Return to main menu without saving
             self.show_main_menu()
 
         btn_frame = tk.Frame(content, bg="#f5f5f5")
@@ -539,6 +563,7 @@ class RestaurantReservationApp:
         tk.Frame(content, bg="#f5f5f5", height=1).pack(fill=tk.Y, expand=True)
 
     def show_view_reservation(self) -> None:
+        # Show all reservations for the currently logged in user
         reservations = self._reservation_service.get_reservations_by_email(self.logged_in_email)
 
         if not reservations:
@@ -601,6 +626,7 @@ class RestaurantReservationApp:
         ).pack(pady=15)
 
     def show_make_reservation(self) -> None:
+        # Screen used to create a new reservation
         self.clear_window()
 
         tk.Label(
@@ -613,7 +639,7 @@ class RestaurantReservationApp:
 
         tk.Label(
             self.root,
-            text="Date format: YYYY-MM-DD",
+            text="Reservation dates must be from today up to 1 year from now",
             font=("Helvetica", 10),
             bg="#f5f5f5",
             fg="#333333",
@@ -622,46 +648,125 @@ class RestaurantReservationApp:
         form = tk.Frame(self.root, bg="#f5f5f5")
         form.pack(pady=10)
 
+        # Variables for the reservation form
         days_var = tk.StringVar()
-        from_date_var = tk.StringVar()
-        to_date_var = tk.StringVar()
         persons_var = tk.StringVar()
         rooms_var = tk.StringVar()
 
-        fields = [
-            ("Number of Days:", days_var),
-            ("From Date (YYYY-MM-DD):", from_date_var),
-            ("To Date (YYYY-MM-DD):", to_date_var),
-            ("Number of Persons:", persons_var),
-            ("Number of Rooms:", rooms_var),
-        ]
+        # Date range rule today to one year from today
+        today = datetime.today().date()
+        max_date = today + timedelta(days=365)
 
-        for row, (label_text, variable) in enumerate(fields):
-            tk.Label(
-                form,
-                text=label_text,
-                bg="#f5f5f5",
-                fg="#1a1a1a",
-                font=("Helvetica", 11, "bold"),
-            ).grid(row=row, column=0, sticky="w", padx=8, pady=6)
+        # Build month/day/year dropdown lists for reservation dates
+        MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        DAYS = [str(d) for d in range(1, 32)]
+        YEARS = [str(y) for y in range(today.year, max_date.year + 1)]
 
-            tk.Entry(
-                form,
-                textvariable=variable,
-                width=30,
-            ).grid(row=row, column=1, padx=8, pady=6)
+        # From-date dropdown variables
+        from_month_var = tk.StringVar(value=MONTHS[today.month - 1])
+        from_day_var = tk.StringVar(value=str(today.day))
+        from_year_var = tk.StringVar(value=str(today.year))
+
+        # To-date dropdown variables
+        to_month_var = tk.StringVar(value=MONTHS[today.month - 1])
+        to_day_var = tk.StringVar(value=str(today.day))
+        to_year_var = tk.StringVar(value=str(today.year))
+
+        # Standard entry rows
+        tk.Label(
+            form,
+            text="Number of Days:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=0, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(form, textvariable=days_var, width=30).grid(row=0, column=1, padx=8, pady=6)
+
+        # From date row with dropdowns
+        tk.Label(
+            form,
+            text="From Date:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=1, column=0, sticky="w", padx=8, pady=6)
+
+        from_date_frame = tk.Frame(form, bg="#f5f5f5")
+        from_date_frame.grid(row=1, column=1, padx=8, pady=6, sticky="w")
+
+        from_month_menu = tk.OptionMenu(from_date_frame, from_month_var, *MONTHS)
+        from_month_menu.config(font=("Helvetica", 10), width=4)
+        from_month_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        from_day_menu = tk.OptionMenu(from_date_frame, from_day_var, *DAYS)
+        from_day_menu.config(font=("Helvetica", 10), width=3)
+        from_day_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        from_year_menu = tk.OptionMenu(from_date_frame, from_year_var, *YEARS)
+        from_year_menu.config(font=("Helvetica", 10), width=5)
+        from_year_menu.pack(side=tk.LEFT)
+
+        # To date row with dropdowns
+        tk.Label(
+            form,
+            text="To Date:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=2, column=0, sticky="w", padx=8, pady=6)
+
+        to_date_frame = tk.Frame(form, bg="#f5f5f5")
+        to_date_frame.grid(row=2, column=1, padx=8, pady=6, sticky="w")
+
+        to_month_menu = tk.OptionMenu(to_date_frame, to_month_var, *MONTHS)
+        to_month_menu.config(font=("Helvetica", 10), width=4)
+        to_month_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        to_day_menu = tk.OptionMenu(to_date_frame, to_day_var, *DAYS)
+        to_day_menu.config(font=("Helvetica", 10), width=3)
+        to_day_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        to_year_menu = tk.OptionMenu(to_date_frame, to_year_var, *YEARS)
+        to_year_menu.config(font=("Helvetica", 10), width=5)
+        to_year_menu.pack(side=tk.LEFT)
+
+        tk.Label(
+            form,
+            text="Number of Persons:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=3, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(form, textvariable=persons_var, width=30).grid(row=3, column=1, padx=8, pady=6)
+
+        tk.Label(
+            form,
+            text="Number of Rooms:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=4, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(form, textvariable=rooms_var, width=30).grid(row=4, column=1, padx=8, pady=6)
 
         def save_new_reservation():
+            # Read the entered values
             days = days_var.get().strip()
-            from_date = from_date_var.get().strip()
-            to_date = to_date_var.get().strip()
             persons = persons_var.get().strip()
             rooms = rooms_var.get().strip()
 
-            if not all([days, from_date, to_date, persons, rooms]):
+            # Build date strings from dropdown selections
+            from_date = f"{from_year_var.get()}-{datetime.strptime(from_month_var.get(), '%b').month:02d}-{int(from_day_var.get()):02d}"
+            to_date = f"{to_year_var.get()}-{datetime.strptime(to_month_var.get(), '%b').month:02d}-{int(to_day_var.get()):02d}"
+
+            # Make sure text fields are not empty
+            if not all([days, persons, rooms]):
                 messagebox.showerror("Error", "Please fill all reservation fields.")
                 return
 
+            # Numeric validation
             if not days.isdigit():
                 messagebox.showerror("Error", "Number of Days must be a whole number.")
                 return
@@ -674,17 +779,30 @@ class RestaurantReservationApp:
                 messagebox.showerror("Error", "Number of Rooms must be a whole number.")
                 return
 
+            # Convert selected dropdown date values into real date objects
             try:
-                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d")
-                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d")
+                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d").date()
+                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d").date()
             except ValueError:
-                messagebox.showerror("Error", "Dates must be in YYYY-MM-DD format.")
+                messagebox.showerror("Error", "Please select valid dates.")
                 return
 
+            # Prevent past reservation dates
+            if from_date_obj < today or to_date_obj < today:
+                messagebox.showerror("Error", "Reservation dates cannot be in the past.")
+                return
+
+            # Prevent reservation dates more than 1 year from now
+            if from_date_obj > max_date or to_date_obj > max_date:
+                messagebox.showerror("Error", "Reservation dates must be within 1 year from today.")
+                return
+
+            # To date must be after From date
             if to_date_obj <= from_date_obj:
                 messagebox.showerror("Error", "To Date must be after From Date.")
                 return
 
+            # Save reservation object to file
             reservation = Reservation(
                 email=self.logged_in_email,
                 number_of_days=days,
@@ -713,29 +831,27 @@ class RestaurantReservationApp:
         ).pack(pady=4)
 
     def show_cancel_reservation(self):
+        # Cancel the current user's reservation
+        reservation = self._reservation_service.get_reservation_by_email(self.logged_in_email)
 
-     reservation = self._reservation_service.get_reservation_by_email(self.logged_in_email)
+        if reservation is None:
+            messagebox.showinfo("Cancel Reservation", "No reservation found.")
+            return
 
-     if reservation is None:
-        messagebox.showinfo("Cancel Reservation", "No reservation found.")
-        return
+        confirm = messagebox.askyesno(
+            "Cancel Reservation",
+            "Are you sure you want to cancel your reservation?"
+        )
 
-     confirm = messagebox.askyesno(
-        "Cancel Reservation",
-        "Are you sure you want to cancel your reservation?"
-     )
+        if not confirm:
+            return
 
-     if not confirm:
-        return
+        self._reservation_service.delete_reservation(reservation)
+        messagebox.showinfo("Cancel Reservation", "Reservation cancelled successfully.")
+        self.show_user_menu()
 
-     self._reservation_service.delete_reservation(reservation)
-     messagebox.showinfo("Cancel Reservation", "Reservation cancelled successfully.")
-     self.show_user_menu()
-    
-
-    
-    
     def show_modify_reservation(self) -> None:
+        # Screen used to modify an existing reservation
         reservation = self._reservation_service.get_reservation_by_email(self.logged_in_email)
 
         if reservation is None:
@@ -754,7 +870,7 @@ class RestaurantReservationApp:
 
         tk.Label(
             self.root,
-            text="Date format: YYYY-MM-DD",
+            text="Reservation dates must be from today up to 1 year from now",
             font=("Helvetica", 10),
             bg="#f5f5f5",
             fg="#333333",
@@ -763,43 +879,132 @@ class RestaurantReservationApp:
         form = tk.Frame(self.root, bg="#f5f5f5")
         form.pack(pady=10)
 
+        # Existing values loaded into the form
         days_var = tk.StringVar(value=reservation.number_of_days)
-        from_date_var = tk.StringVar(value=reservation.from_date)
-        to_date_var = tk.StringVar(value=reservation.to_date)
         persons_var = tk.StringVar(value=reservation.number_of_persons)
         rooms_var = tk.StringVar(value=reservation.number_of_rooms)
 
-        fields = [
-            ("Number of Days:", days_var),
-            ("From Date (YYYY-MM-DD):", from_date_var),
-            ("To Date (YYYY-MM-DD):", to_date_var),
-            ("Number of Persons:", persons_var),
-            ("Number of Rooms:", rooms_var),
-        ]
+        # Date rule range
+        today = datetime.today().date()
+        max_date = today + timedelta(days=365)
 
-        for row, (label_text, variable) in enumerate(fields):
-            tk.Label(
-                form,
-                text=label_text,
-                bg="#f5f5f5",
-                fg="#1a1a1a",
-                font=("Helvetica", 11, "bold"),
-            ).grid(row=row, column=0, sticky="w", padx=8, pady=6)
+        MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        DAYS = [str(d) for d in range(1, 32)]
+        YEARS = [str(y) for y in range(today.year, max_date.year + 1)]
 
-            tk.Entry(
-                form,
-                textvariable=variable,
-                width=30,
-            ).grid(row=row, column=1, padx=8, pady=6)
+        # Convert saved reservation dates into date objects so dropdowns can be pre-filled
+        saved_from = datetime.strptime(reservation.from_date, "%Y-%m-%d")
+        saved_to = datetime.strptime(reservation.to_date, "%Y-%m-%d")
+
+        from_month_var = tk.StringVar(value=MONTHS[saved_from.month - 1])
+        from_day_var = tk.StringVar(value=str(saved_from.day))
+        from_year_var = tk.StringVar(value=str(saved_from.year))
+
+        to_month_var = tk.StringVar(value=MONTHS[saved_to.month - 1])
+        to_day_var = tk.StringVar(value=str(saved_to.day))
+        to_year_var = tk.StringVar(value=str(saved_to.year))
+
+        tk.Label(
+            form,
+            text="Number of Days:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=0, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(
+            form,
+            textvariable=days_var,
+            width=30,
+        ).grid(row=0, column=1, padx=8, pady=6)
+
+        # From date dropdowns
+        tk.Label(
+            form,
+            text="From Date:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=1, column=0, sticky="w", padx=8, pady=6)
+
+        from_date_frame = tk.Frame(form, bg="#f5f5f5")
+        from_date_frame.grid(row=1, column=1, padx=8, pady=6, sticky="w")
+
+        from_month_menu = tk.OptionMenu(from_date_frame, from_month_var, *MONTHS)
+        from_month_menu.config(font=("Helvetica", 10), width=4)
+        from_month_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        from_day_menu = tk.OptionMenu(from_date_frame, from_day_var, *DAYS)
+        from_day_menu.config(font=("Helvetica", 10), width=3)
+        from_day_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        from_year_menu = tk.OptionMenu(from_date_frame, from_year_var, *YEARS)
+        from_year_menu.config(font=("Helvetica", 10), width=5)
+        from_year_menu.pack(side=tk.LEFT)
+
+        # To date dropdowns
+        tk.Label(
+            form,
+            text="To Date:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=2, column=0, sticky="w", padx=8, pady=6)
+
+        to_date_frame = tk.Frame(form, bg="#f5f5f5")
+        to_date_frame.grid(row=2, column=1, padx=8, pady=6, sticky="w")
+
+        to_month_menu = tk.OptionMenu(to_date_frame, to_month_var, *MONTHS)
+        to_month_menu.config(font=("Helvetica", 10), width=4)
+        to_month_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        to_day_menu = tk.OptionMenu(to_date_frame, to_day_var, *DAYS)
+        to_day_menu.config(font=("Helvetica", 10), width=3)
+        to_day_menu.pack(side=tk.LEFT, padx=(0, 4))
+
+        to_year_menu = tk.OptionMenu(to_date_frame, to_year_var, *YEARS)
+        to_year_menu.config(font=("Helvetica", 10), width=5)
+        to_year_menu.pack(side=tk.LEFT)
+
+        tk.Label(
+            form,
+            text="Number of Persons:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=3, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(
+            form,
+            textvariable=persons_var,
+            width=30,
+        ).grid(row=3, column=1, padx=8, pady=6)
+
+        tk.Label(
+            form,
+            text="Number of Rooms:",
+            bg="#f5f5f5",
+            fg="#1a1a1a",
+            font=("Helvetica", 11, "bold"),
+        ).grid(row=4, column=0, sticky="w", padx=8, pady=6)
+
+        tk.Entry(
+            form,
+            textvariable=rooms_var,
+            width=30,
+        ).grid(row=4, column=1, padx=8, pady=6)
 
         def save_modified_reservation():
+            # Read modified form values
             days = days_var.get().strip()
-            from_date = from_date_var.get().strip()
-            to_date = to_date_var.get().strip()
             persons = persons_var.get().strip()
             rooms = rooms_var.get().strip()
 
-            if not all([days, from_date, to_date, persons, rooms]):
+            # Build updated date strings from dropdown selections
+            from_date = f"{from_year_var.get()}-{datetime.strptime(from_month_var.get(), '%b').month:02d}-{int(from_day_var.get()):02d}"
+            to_date = f"{to_year_var.get()}-{datetime.strptime(to_month_var.get(), '%b').month:02d}-{int(to_day_var.get()):02d}"
+
+            if not all([days, persons, rooms]):
                 messagebox.showerror("Error", "Please fill all reservation fields.")
                 return
 
@@ -816,16 +1021,27 @@ class RestaurantReservationApp:
                 return
 
             try:
-                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d")
-                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d")
+                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d").date()
+                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d").date()
             except ValueError:
-                messagebox.showerror("Error", "Dates must be in YYYY-MM-DD format.")
+                messagebox.showerror("Error", "Please select valid dates.")
+                return
+
+            # Prevent past dates during modification too
+            if from_date_obj < today or to_date_obj < today:
+                messagebox.showerror("Error", "Reservation dates cannot be in the past.")
+                return
+
+            # Prevent dates beyond one year from now
+            if from_date_obj > max_date or to_date_obj > max_date:
+                messagebox.showerror("Error", "Reservation dates must be within 1 year from today.")
                 return
 
             if to_date_obj <= from_date_obj:
                 messagebox.showerror("Error", "To Date must be after From Date.")
                 return
 
+            # Build the updated reservation object
             updated_reservation = Reservation(
                 email=self.logged_in_email,
                 number_of_days=days,
@@ -835,6 +1051,7 @@ class RestaurantReservationApp:
                 number_of_rooms=rooms,
             )
 
+            # Update the reservation in the data file
             self._reservation_service.update_reservation(reservation, updated_reservation)
             messagebox.showinfo("Success", "Reservation updated successfully.")
             self.show_user_menu()
@@ -854,9 +1071,11 @@ class RestaurantReservationApp:
         ).pack(pady=4)
 
     def run(self) -> None:
+        # Start the Tkinter event loop
         self.root.mainloop()
 
 
 if __name__ == "__main__":
+    # Run the application
     app = RestaurantReservationApp()
     app.run()
