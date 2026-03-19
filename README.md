@@ -87,4 +87,72 @@ python3 RestaurantReservation.py
 
 --- 
 
+## Manzur Contribution
+
+### 1. Main Menu
+The project main menu should display the following options:
+
+- **a. Register / Signup**
+- **b. Login**
+- **c. Exit**
+
+A welcome message of your choice may also be displayed at the top of the main menu.
+
+### 2. Registration / Signup
+If the user selects **Register / Signup**, the program should display the following sequence under the heading:
+
+## Registration In-Process
+
+The user must enter the following information in this exact order:
+
+- **a. Email**
+- **b. First Name**
+- **c. Last Name**
+- **d. Password**
+- **e. Date of Birth**
+- **f. Submit**
+- **g. Exit**
+
+#### Registration Rules
+- If the user leaves any field blank, the program must display:
+
+`Please fill all the data for registration`
+
+- The program must not move to the next field until the current field is entered properly.
+  - For example, if the user does not enter an email and presses Enter, the program must ask for the email again before moving to **First Name**.
+- All inputs must be validated.
+  - **Email** should not be an integer or float.
+  - **First Name** should not be an integer or float.
+  - **Last Name** should not be an integer or float.
+  - **Password** should not be an integer or float only.
+  - **Date of Birth** should be validated as proper date input.
+- All registration fields must be completed in the sequence provided above (**a–f**).
+
+#### Submit Action
+- When the user selects **Submit**, the user data should be stored in a file.
+- After successful storage, the program should display:
+
+`Registration Successful`
+
+- The program should then return to the **Main Menu**.
+
+
+### 3. Login
+If the user selects **Login**, the program should ask the user to enter:
+
+- **Enter your Email:**
+- **Enter your Password:**
+
+After entering the password, the user should press **Enter** to log in.
+
+The program should verify the entered email and password from the stored file. If the credentials match, the following menu should be displayed:
+
+- **a. View Reservation**
+- **b. Make Reservation**
+- **c. Modify Reservation**
+- **d. Cancel Reservation**
+- **e. Logout**
+
+------
+
 COIS 2040 – Trent University
