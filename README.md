@@ -73,4 +73,13 @@ python3 RestaurantReservation.py
 
 ---
 
+## Sham's contribution  
+- implemented Make Reservation, Modify Reservation, and View Reservation features
+- Added a date constraint limiting reservations to within 1 year from the current date
+- Implemented input validation to prevent invalid characters and ensure correct formats
+- Improved user experience by using dropdown-based inputs instead of free text entry
+- Ensured all reservation features follow validation rules to maintain data accuracy and system reliability
+
+--- 
+
 COIS 2040 – Trent University
