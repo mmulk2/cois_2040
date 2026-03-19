@@ -74,6 +74,7 @@ python3 RestaurantReservation.py
 ---
 
 ## Sham's contribution  
+
 - implemented Make Reservation, Modify Reservation, and View Reservation features
 - Added a date constraint limiting reservations to within 1 year from the current date
 - Implemented input validation to prevent invalid characters and ensure correct formats
@@ -82,8 +83,15 @@ python3 RestaurantReservation.py
 
 --- 
 
-## Mohamed contribution  
-- To do
+## Mohamed contribution 
+
+- Designed a complete UML class diagram showing the structure and relationships between RestaurantReservationApp, UserService, ReservationService, and the model classes
+- Applied OOP principles in the diagram by separating responsibilities between the application layer, service layer, and data models
+- Implemented the Cancel Reservation feature with a confirmation step to ensure safe deletion of reservations
+- Developed the show_cancel_reservation() method to handle user interaction, including checking for existing reservations and initiating the cancel process
+- Integrated the feature with ReservationService.delete_reservation() to handle file updates and remove the selected reservation from storage
+- Used encapsulation by keeping business logic and file operations inside the service layer rather than the main application
+- Implemented logout and exit functionality, where logout resets the user session and exit displays a closing message before terminating the application
 
 --- 
 
