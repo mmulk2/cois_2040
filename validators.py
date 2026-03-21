@@ -223,4 +223,15 @@ class ReservationValidator:
         if to_date_obj <= from_date_obj:
             return False, "To Date must be after From Date.", None, None
 
+        # Ensure number_of_days matches actual date difference
+        actual_days = (to_date_obj - from_date_obj).days
+
+        if int(days) != actual_days:
+            return (
+                False,
+                f"Number of Days must match the selected dates. For these dates, it should be {actual_days}.",
+                None,
+                None,
+            )
+
         return True, "", from_iso, to_iso
