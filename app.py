@@ -10,7 +10,11 @@ from datetime import datetime, timedelta
 from models import RegisterUser, Reservation
 from user_service import UserService
 from reservation_service import ReservationService
-from validators import validate_registration
+from validators import (
+    LoginValidator,
+    ReservationValidator,
+    UserRegistrationValidator,
+)
 
 
 class RestaurantReservationApp:
@@ -28,6 +32,9 @@ class RestaurantReservationApp:
         # Create service objects for user and reservation file handling
         self._user_service = UserService()
         self._reservation_service = ReservationService()
+        self._registration_validator = UserRegistrationValidator()
+        self._login_validator = LoginValidator()
+        self._reservation_validator = ReservationValidator()
 
         # Store the email of the currently logged in user
         self.logged_in_email = None
@@ -185,13 +192,9 @@ class RestaurantReservationApp:
             email = email_var.get().strip()
             password = password_var.get().strip()
 
-            # Basic empty-field validation to show login
-            if not email:
-                messagebox.showwarning("Login", "Please enter your email.")
-                return
-
-            if not password:
-                messagebox.showwarning("Login", "Please enter your password.")
+            ok_login, login_msg = self._login_validator.validate_login(email, password)
+            if not ok_login:
+                messagebox.showwarning("Login", login_msg)
                 return
 
             # Verify login against saved user data
@@ -505,7 +508,9 @@ class RestaurantReservationApp:
             dob = f"{month_var.get()} {day_str}, {year_var.get()}"
 
             # Validate the registration fields
-            ok, msg = validate_registration(email, first_name, last_name, password, dob)
+            ok, msg = self._registration_validator.validate_registration(
+                email, first_name, last_name, password, dob
+            )
             if not ok:
                 messagebox.showwarning("Registration", msg)
                 return
@@ -757,49 +762,21 @@ class RestaurantReservationApp:
             persons = persons_var.get().strip()
             rooms = rooms_var.get().strip()
 
-            # Build date strings from dropdown selections
-            from_date = f"{from_year_var.get()}-{datetime.strptime(from_month_var.get(), '%b').month:02d}-{int(from_day_var.get()):02d}"
-            to_date = f"{to_year_var.get()}-{datetime.strptime(to_month_var.get(), '%b').month:02d}-{int(to_day_var.get()):02d}"
-
-            # Make sure text fields are not empty
-            if not all([days, persons, rooms]):
-                messagebox.showerror("Error", "Please fill all reservation fields.")
-                return
-
-            # Numeric validation
-            if not days.isdigit():
-                messagebox.showerror("Error", "Number of Days must be a whole number.")
-                return
-
-            if not persons.isdigit():
-                messagebox.showerror("Error", "Number of Persons must be a whole number.")
-                return
-
-            if not rooms.isdigit():
-                messagebox.showerror("Error", "Number of Rooms must be a whole number.")
-                return
-
-            # Convert selected dropdown date values into real date objects
-            try:
-                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d").date()
-                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d").date()
-            except ValueError:
-                messagebox.showerror("Error", "Please select valid dates.")
-                return
-
-            # Prevent past reservation dates
-            if from_date_obj < today or to_date_obj < today:
-                messagebox.showerror("Error", "Reservation dates cannot be in the past.")
-                return
-
-            # Prevent reservation dates more than 1 year from now
-            if from_date_obj > max_date or to_date_obj > max_date:
-                messagebox.showerror("Error", "Reservation dates must be within 1 year from today.")
-                return
-
-            # To date must be after From date
-            if to_date_obj <= from_date_obj:
-                messagebox.showerror("Error", "To Date must be after From Date.")
+            ok, err_msg, from_date, to_date = self._reservation_validator.validate_reservation(
+                days,
+                persons,
+                rooms,
+                from_month_var.get(),
+                from_day_var.get(),
+                from_year_var.get(),
+                to_month_var.get(),
+                to_day_var.get(),
+                to_year_var.get(),
+                today,
+                max_date,
+            )
+            if not ok:
+                messagebox.showerror("Error", err_msg)
                 return
 
             # Save reservation object to file
@@ -1000,45 +977,21 @@ class RestaurantReservationApp:
             persons = persons_var.get().strip()
             rooms = rooms_var.get().strip()
 
-            # Build updated date strings from dropdown selections
-            from_date = f"{from_year_var.get()}-{datetime.strptime(from_month_var.get(), '%b').month:02d}-{int(from_day_var.get()):02d}"
-            to_date = f"{to_year_var.get()}-{datetime.strptime(to_month_var.get(), '%b').month:02d}-{int(to_day_var.get()):02d}"
-
-            if not all([days, persons, rooms]):
-                messagebox.showerror("Error", "Please fill all reservation fields.")
-                return
-
-            if not days.isdigit():
-                messagebox.showerror("Error", "Number of Days must be a whole number.")
-                return
-
-            if not persons.isdigit():
-                messagebox.showerror("Error", "Number of Persons must be a whole number.")
-                return
-
-            if not rooms.isdigit():
-                messagebox.showerror("Error", "Number of Rooms must be a whole number.")
-                return
-
-            try:
-                from_date_obj = datetime.strptime(from_date, "%Y-%m-%d").date()
-                to_date_obj = datetime.strptime(to_date, "%Y-%m-%d").date()
-            except ValueError:
-                messagebox.showerror("Error", "Please select valid dates.")
-                return
-
-            # Prevent past dates during modification too
-            if from_date_obj < today or to_date_obj < today:
-                messagebox.showerror("Error", "Reservation dates cannot be in the past.")
-                return
-
-            # Prevent dates beyond one year from now
-            if from_date_obj > max_date or to_date_obj > max_date:
-                messagebox.showerror("Error", "Reservation dates must be within 1 year from today.")
-                return
-
-            if to_date_obj <= from_date_obj:
-                messagebox.showerror("Error", "To Date must be after From Date.")
+            ok, err_msg, from_date, to_date = self._reservation_validator.validate_reservation(
+                days,
+                persons,
+                rooms,
+                from_month_var.get(),
+                from_day_var.get(),
+                from_year_var.get(),
+                to_month_var.get(),
+                to_day_var.get(),
+                to_year_var.get(),
+                today,
+                max_date,
+            )
+            if not ok:
+                messagebox.showerror("Error", err_msg)
                 return
 
             # Build the updated reservation object

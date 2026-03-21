@@ -66,7 +66,7 @@ python3 RestaurantReservation.py
 | **app.py** | Main GUI: `RestaurantReservationApp` (screens, navigation) |
 | **models.py** | Domain model: `RegisterUser` |
 | **config.py** | Constants (e.g. `USERS_FILE`) |
-| **validators.py** | Input validation (registration, email, DOB format) |
+| **validators.py** | `UserRegistrationValidator`, `LoginValidator`, `ReservationValidator` — all input validation |
 | **user_service.py** | User persistence and login: `UserService` (save, load, verify) |
 | **users_data.txt** | User data file (created on first registration; ignored by Git) |
 | **.gitignore** | Ignores `__pycache__/`, `users_data.txt`, venv, etc. |
